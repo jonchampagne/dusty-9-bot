@@ -8,8 +8,9 @@ import random
 from textwrap import wrap
 import traceback
 import datetime
+import json
 
-bot = commands.Bot(command_prefix='!')
+bot = commands.Bot(command_prefix = '!', case_insensitive = true)
 server = None
 
 @bot.event
