@@ -95,7 +95,7 @@ async def watch_xkcd(ctx):
         watch_list.append(id)
         message = "Added channel #" + ctx.message.channel.name + " to XKCD watch list"
 
-    save_xkcd_watch_list()
+    save_xkcd_conf()
     await bot.say(message)
 
 async def show_xkcd(num: str, channel):
@@ -109,18 +109,18 @@ async def show_xkcd(num: str, channel):
 
 async def _watch_xkcd():
     await bot.wait_until_ready()
-
-    i = 0
     
+    # Python was getting finnicky about modifying a global int. This is the easiest way around that
     while not bot.is_closed:
-        if i != libxkcd.getLatestComicNum():
-            i = libxkcd.getLatestComicNum()
+        if xkcd_conf['latest_seen_comic'] != libxkcd.getLatestComicNum():
+            xkcd_conf['latest_seen_comic'] = libxkcd.getLatestComicNum()
             for channel in watch_list:
-                await show_xkcd(str(i), bot.get_channel(channel))
+                await show_xkcd(str(latest_xkcd), bot.get_channel(channel))
+            save_xkcd_conf()
 
         await asyncio.sleep(60)
 
-def save_xkcd_watch_list():
+def save_xkcd_conf():
     f = open(WATCH_XKCD_CONF_FILE, 'w')
     f.write(json.dumps(xkcd_conf))
     f.close()
