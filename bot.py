@@ -9,7 +9,7 @@ import random
 from textwrap import wrap
 import traceback
 import datetime
-import xkcd
+import xkcd as libxkcd
 
 bot = commands.Bot(command_prefix = '!', case_insensitive = True)
 server = None
@@ -75,6 +75,15 @@ async def roll(dice : str):
     except Exception:
         await bot.say(sys.exc_info()[0])
 
+async def show_xkcd(num: str, channel):
+    comic = libxkcd.getLatestComic()
+    comic.download(output = pwd, outputFile = "XKCD-" + num + ".png", silent = False)
+    await bot.send_message(channel, "XKCD #" + num)
+    await bot.send_message(channel, comic.getTitle())
+    print(str(pwd))
+    await bot.send_file(channel, str(pwd) + "/XKCD-" + num + ".png")
+    await bot.send_message(channel, comic.getAltText())
+
 async def watch_xkcd():
     await bot.wait_until_ready()
     
@@ -85,17 +94,9 @@ async def watch_xkcd():
     i = 0
     
     while not bot.is_closed: 
-        if i != xkcd.getLatestComicNum():
-            i = xkcd.getLatestComicNum()
-            comic = xkcd.getLatestComic()
-            comic.download(output = pwd, outputFile = "XKCD-" + str(i) + ".png", silent = False)
-            await bot.send_message(channel, "XKCD #" + str(i))
-            await bot.send_message(channel, comic.getTitle())
-            print(str(pwd))
-            await bot.send_file(channel, str(pwd)+"/XKCD-" + str(i) + ".png")
-            await bot.send_message(channel, comic.getAltText())
-            
-        
+        if i != libxkcd.getLatestComicNum():
+            i = libxkcd.getLatestComicNum()
+            await show_xkcd(str(i), channel)
         await asyncio.sleep(60)
 
 
