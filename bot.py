@@ -75,8 +75,12 @@ async def roll(dice : str):
     except Exception:
         await bot.say(sys.exc_info()[0])
 
+@bot.command(pass_context=True)
+async def xkcd(ctx, num: str):
+    await show_xkcd(num, ctx.message.channel)
+
 async def show_xkcd(num: str, channel):
-    comic = libxkcd.getLatestComic()
+    comic = libxkcd.getComic(num)
     comic.download(output = pwd, outputFile = "XKCD-" + num + ".png", silent = False)
     await bot.send_message(channel, "XKCD #" + num)
     await bot.send_message(channel, comic.getTitle())
