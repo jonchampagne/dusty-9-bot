@@ -10,10 +10,16 @@ from textwrap import wrap
 import traceback
 import datetime
 import xkcd as libxkcd
+import json
+
+WATCH_XKCD_CONF_FILE = 'watch_xkcd_conf.json'
 
 bot = commands.Bot(command_prefix = '!', case_insensitive = True)
 server = None
 pwd = os.path.dirname(os.path.realpath(__file__))
+
+xkcd_conf = json.loads(open(WATCH_XKCD_CONF_FILE).read())
+watch_list = xkcd_conf['channels']
 
 bot.remove_command("help")
 
@@ -93,6 +99,19 @@ async def roll(dice : str):
 async def xkcd(ctx, num: str):
     await show_xkcd(num, ctx.message.channel)
 
+@bot.command(pass_context=True)
+async def watch_xkcd(ctx):
+    id = ctx.message.channel.id
+    if id in watch_list:
+        watch_list.remove(id)
+        message = "Removed channel #" + ctx.message.channel.name + " from XKCD watch list"
+    else:
+        watch_list.append(id)
+        message = "Added channel #" + ctx.message.channel.name + " to XKCD watch list"
+
+    save_xkcd_watch_list()
+    await bot.say(message)
+
 async def show_xkcd(num: str, channel):
     comic = libxkcd.getComic(num)
     comic.download(output = pwd, outputFile = "XKCD-" + num + ".png", silent = False)
@@ -102,21 +121,23 @@ async def show_xkcd(num: str, channel):
     await bot.send_file(channel, str(pwd) + "/XKCD-" + num + ".png")
     await bot.send_message(channel, comic.getAltText())
 
-async def watch_xkcd():
+async def _watch_xkcd():
     await bot.wait_until_ready()
-    
-    # Jaysee test server #general
-    channel_id = "425450494736203791"
-    channel = discord.Object(id=channel_id) 
 
     i = 0
     
-    while not bot.is_closed: 
+    while not bot.is_closed:
         if i != libxkcd.getLatestComicNum():
             i = libxkcd.getLatestComicNum()
-            await show_xkcd(str(i), channel)
+            for channel in watch_list:
+                await show_xkcd(str(i), bot.get_channel(channel))
+
         await asyncio.sleep(60)
 
+def save_xkcd_watch_list():
+    f = open(WATCH_XKCD_CONF_FILE, 'w')
+    f.write(json.dumps(xkcd_conf))
+    f.close()
 
-bot.loop.create_task(watch_xkcd())
+bot.loop.create_task(_watch_xkcd())
 bot.run(token)
