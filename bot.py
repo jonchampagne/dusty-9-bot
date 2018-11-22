@@ -12,8 +12,10 @@ import datetime
 import xkcd as libxkcd
 import json
 import dice
+import datetime
 
 WATCH_XKCD_CONF_FILE = 'watch_xkcd_conf.json'
+LAST_SEEN_FILE = 'last_seen.json'
 
 bot = commands.Bot(command_prefix = '!', case_insensitive = True)
 server = None
@@ -45,6 +47,7 @@ async def help():
     s += "!roll X: Rolls d a die or dice, specified in standard die notation (XdY)\n"
     s += "!xkcd n: Pulls up XKCD #n"
     s += "!roll_stats X: Various statistics of a roll specified in standard die notation (XdY)\n"
+    s += "!last_seen <username>: When was <username> last online?"
     s += "```"
     
     await bot.say(s)
@@ -140,6 +143,46 @@ async def watch_xkcd(ctx):
     save_xkcd_conf()
     await bot.say(message)
 
+@bot.command(pass_context=True)
+async def last_seen(ctx, *args):
+    # Spaces deliminate args. Gather them all up into a username.
+    username = ""
+    for arg in args:
+        username += arg + " "
+    username = username.strip()
+
+    userid = 0
+
+    # We got an @username. Handy!
+    # We still resolve to a username and then resolve back to a 
+    # userid to make sure the user actually exists on this server.
+    # Efficient? No. Works? Yup!
+    if username.startswith("<@"):
+        uid = username.strip("<@").strip(">")
+        username = ctx.message.server.members[uid].name
+    
+    # Get the ID from the user name
+    for member in ctx.message.server.members:
+        if member.name == username:
+            userid = member.id
+    
+    # Build our response
+    response = ""
+    if userid == 0:
+        response = "Unknown user " + username
+    else:
+        try:
+            seen = last_seen[userid].strftime('%A, %B %-m at %-I:%M%p')
+        except:
+            seen = None
+
+        if seen != None:
+            response = "Last saw " + username + " on " + seen
+        else:
+            response = "Never seen " + username
+
+    await bot.say(response)
+
 async def show_xkcd(num: str, channel):
     comic = libxkcd.getComic(num)
     comic.download(output = pwd, outputFile = "XKCD-" + num + ".png", silent = False)
@@ -167,5 +210,41 @@ def save_xkcd_conf():
     f.write(json.dumps(xkcd_conf))
     f.close()
 
+def save_last_seen():
+    f = open(LAST_SEEN_FILE, 'w')
+    f.write(json.dumps(last_seen, default=str))
+    f.close()
+
+def load_last_seen():
+    f = open(LAST_SEEN_FILE, 'r')
+    imported = json.loads(f.read())
+    f.close()
+    
+    last_seen = dict()
+
+    for i in imported:
+        datestring = imported[i]
+        last_seen[i] = datetime.datetime.strptime(datestring, '%Y-%m-%d %H:%M:%S.%f') # http://strftime.org 
+
+    return last_seen
+
+async def log_people_seen():
+    await bot.wait_until_ready()
+
+    while not bot.is_closed:
+        now = datetime.datetime.now()
+        
+        for server in bot.servers:
+            for member in server.members:
+                if str(member.status) == "online":
+                    last_seen[member.id] = now
+        
+        save_last_seen()
+        await asyncio.sleep(60)
+
+               
+last_seen = load_last_seen()
+
 bot.loop.create_task(_watch_xkcd())
+bot.loop.create_task(log_people_seen())
 bot.run(token)
