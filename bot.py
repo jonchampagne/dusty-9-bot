@@ -115,7 +115,7 @@ async def _watch_xkcd():
         if xkcd_conf['latest_seen_comic'] != libxkcd.getLatestComicNum():
             xkcd_conf['latest_seen_comic'] = libxkcd.getLatestComicNum()
             for channel in watch_list:
-                await show_xkcd(str(latest_xkcd), bot.get_channel(channel))
+                await show_xkcd(str(xkcd_conf['latest_seen_comic']), bot.get_channel(channel))
             save_xkcd_conf()
 
         await asyncio.sleep(60)
