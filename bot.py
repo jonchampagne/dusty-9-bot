@@ -12,8 +12,10 @@ import datetime
 import xkcd as libxkcd
 import json
 import dice
+import datetime
 
 WATCH_XKCD_CONF_FILE = 'watch_xkcd_conf.json'
+LAST_SEEN_FILE = 'last_seen.json'
 
 bot = commands.Bot(command_prefix = '!', case_insensitive = True)
 server = None
@@ -167,5 +169,41 @@ def save_xkcd_conf():
     f.write(json.dumps(xkcd_conf))
     f.close()
 
+def save_last_seen():
+    f = open(LAST_SEEN_FILE, 'w')
+    f.write(json.dumps(last_seen, default=str))
+    f.close()
+
+def load_last_seen():
+    f = open(LAST_SEEN_FILE, 'r')
+    imported = json.loads(f.read())
+    f.close()
+    
+    last_seen = dict()
+
+    for i in imported:
+        datestring = imported[i]
+        last_seen[i] = datetime.datetime.strptime(datestring, '%Y-%m-%d %H:%M:%S.%f') # http://strftime.org 
+
+    return last_seen
+
+async def log_people_seen():
+    await bot.wait_until_ready()
+
+    while not bot.is_closed:
+        now = datetime.datetime.now()
+        
+        for server in bot.servers:
+            for member in server.members:
+                if str(member.status) == "online":
+                    last_seen[member.id] = now
+        
+        save_last_seen()
+        await asyncio.sleep(60)
+
+               
+last_seen = load_last_seen()
+
 bot.loop.create_task(_watch_xkcd())
+bot.loop.create_task(log_people_seen())
 bot.run(token)
