@@ -12,6 +12,8 @@ import datetime
 bot = commands.Bot(command_prefix = '!', case_insensitive = True)
 server = None
 
+bot.remove_command("help")
+
 @bot.event
 async def on_ready():
     print('Logged in as')
@@ -23,6 +25,18 @@ async def on_ready():
             server = s
             print('Found server: ' + server.name)
             break
+
+@bot.command()
+async def help():
+    s = "```\n"
+    s += "Commands:\n"
+    s += "!flip: Flip a coin\n"
+    s += "!flip n: Flip n coins\n"
+    s += "!roll X: Rolls d a die or dice, specified in standard die notation (XdY)\n"
+    s += "```"
+    
+    print(s)
+    await bot.say(s)
 
 @bot.command()
 async def flip(count = 1):
