@@ -8,6 +8,7 @@ import random
 from textwrap import wrap
 import traceback
 import datetime
+import dice
 
 bot = commands.Bot(command_prefix = '!', case_insensitive = True)
 server = None
@@ -33,6 +34,7 @@ async def help():
     s += "!flip: Flip a coin\n"
     s += "!flip n: Flip n coins\n"
     s += "!roll X: Rolls d a die or dice, specified in standard die notation (XdY)\n"
+    s += "!roll_stats X: Various statistics of a roll specified in standard die notation (XdY)\n"
     s += "```"
     
     print(s)
@@ -80,10 +82,45 @@ async def roll(dice : str):
     except Exception:
         await bot.say('Format has to be in NdN!')
         return
-        result = ', '.join(str(random.randint(1, limit)) for r in range(rolls))
+
+    result = ', '.join(str(random.randint(1, limit)) for r in range(rolls))
+
     try:
         await bot.say(result)
     except Exception:
         await bot.say(sys.exc_info()[0])
 
+@bot.command()
+async def roll_stats(dicestr : str):
+    maximum = dice.roll_max(dicestr)
+
+    # The roll methods can either return an int or a list of ints, depending on input.
+    # If we get a list of ints, just add them up.
+    if isinstance(maximum, list):
+        x = 0
+        for i in maximum:
+            x += i
+        maximum = x
+
+    minimum = dice.roll_min(dicestr)
+    if isinstance(minimum, list):
+        x = 0
+        for i in minimum:
+            x += i
+        minimum = x
+
+    typical = (minimum + maximum) / 2
+    await bot.say("Minimum: " + str(minimum))
+    await bot.say("Maximum: " + str(maximum))
+    await bot.say("Typical roll: " + str(typical))
+
+
 bot.run(token)
+
+
+
+
+
+
+
+
