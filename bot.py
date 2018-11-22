@@ -142,6 +142,46 @@ async def watch_xkcd(ctx):
     save_xkcd_conf()
     await bot.say(message)
 
+@bot.command(pass_context=True)
+async def last_seen(ctx, *args):
+    # Spaces deliminate args. Gather them all up into a username.
+    username = ""
+    for arg in args:
+        username += arg + " "
+    username = username.strip()
+
+    userid = 0
+
+    # We got an @username. Handy!
+    # We still resolve to a username and then resolve back to a 
+    # userid to make sure the user actually exists on this server.
+    # Efficient? No. Works? Yup!
+    if username.startswith("<@"):
+        uid = username.strip("<@").strip(">")
+        username = ctx.message.server.members[uid].name
+    
+    # Get the ID from the user name
+    for member in ctx.message.server.members:
+        if member.name == username:
+            userid = member.id
+    
+    # Build our response
+    response = ""
+    if userid == 0:
+        response = "Unknown user " + username
+    else:
+        try:
+            seen = last_seen[userid].strftime('%A, %B %-m at %-I:%M%p')
+        except:
+            seen = None
+
+        if seen != None:
+            response = "Last saw " + username + " on " + seen
+        else:
+            response = "Never seen " + username
+
+    await bot.say(response)
+
 async def show_xkcd(num: str, channel):
     comic = libxkcd.getComic(num)
     comic.download(output = pwd, outputFile = "XKCD-" + num + ".png", silent = False)
