@@ -34,6 +34,7 @@ async def help():
     s += "!flip: Flip a coin\n"
     s += "!flip n: Flip n coins\n"
     s += "!roll X: Rolls d a die or dice, specified in standard die notation (XdY)\n"
+    s += "!roll_stats X: Various statistics of a roll specified in standard die notation (XdY)\n"
     s += "```"
     
     print(s)
