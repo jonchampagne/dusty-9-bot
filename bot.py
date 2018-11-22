@@ -45,7 +45,7 @@ async def help():
     s += "!flip: Flip a coin\n"
     s += "!flip n: Flip n coins\n"
     s += "!roll X: Rolls d a die or dice, specified in standard die notation (XdY)\n"
-    s += "!xkcd n: Pulls up XKCD #n"
+    s += "!xkcd n: Pulls up XKCD #n \n"
     s += "!roll_stats X: Various statistics of a roll specified in standard die notation (XdY)\n"
     s += "!last_seen <username>: When was <username> last online?"
     s += "```"
