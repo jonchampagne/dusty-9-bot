@@ -1,6 +1,7 @@
 #!/bin/env python3
 
 import os
+import os.path
 import discord
 from discord.ext import commands
 import asyncio
@@ -24,6 +25,13 @@ TEST_BOT_NAME = 'Dusty 9 Bot Test 2'
 bot = commands.Bot(command_prefix = '!', case_insensitive = True)
 server = None
 pwd = os.path.dirname(os.path.realpath(__file__))
+
+# Check if WATCH_XKCD_CONF_FILE exists. If not, create it.
+xkcd_file = open(WATCH_XKCD_CONF_FILE, 'r')
+if not xkcd_file:
+    xkcd_file_create = open(WATCH_XKCD_CONF_FILE, 'w')
+    xkcd_file_create.write("{\"channels\": [], \"latest_seen_comic\": null}")
+    xkcd_file_create.close()
 
 xkcd_conf = json.loads(open(WATCH_XKCD_CONF_FILE).read())
 watch_list = xkcd_conf['channels']
@@ -170,7 +178,7 @@ async def last_seen(ctx, *args):
     
     # Get the ID from the user name
     for member in ctx.message.server.members:
-        if member.name == username:
+        if member.name.encode('ascii', 'ignore').decode('ascii').strip() == username:
             userid = member.id
     
     # Build our response
@@ -179,8 +187,9 @@ async def last_seen(ctx, *args):
         response = "Unknown user " + username
     else:
         try:
-            seen = last_seen[userid].strftime('%A, %B %-m at %-I:%M%p')
-        except:
+            seen = last_seen[userid].strftime('%A, %B %d at %I:%M%p')
+        except Exception as e:
+            print(e)
             seen = None
 
         if seen != None:
@@ -224,6 +233,14 @@ def save_last_seen():
 
 def load_last_seen():
     f = open(LAST_SEEN_FILE, 'r')
+
+    # If the file doesn't exist, create it.
+    if not f:
+        f2 = open(LAST_SEEN_FILE, 'w')
+        f2.write("{}")
+        f2.close()
+        return
+    
     imported = json.loads(f.read())
     f.close()
     
@@ -238,12 +255,14 @@ def load_last_seen():
 async def log_people_seen():
     await bot.wait_until_ready()
 
+    print(bot.is_closed)
+
     while not bot.is_closed:
         now = datetime.datetime.now()
         
         for server in bot.servers:
             for member in server.members:
-                if str(member.status) == "online":
+                if str(member.status) != "offline":
                     last_seen[member.id] = now
         
         save_last_seen()
