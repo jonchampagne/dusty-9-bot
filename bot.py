@@ -4,7 +4,6 @@ import os
 import discord
 from discord.ext import commands
 import asyncio
-from credentials import token
 import random
 from textwrap import wrap
 import traceback
@@ -14,8 +13,13 @@ import json
 import dice
 import datetime
 
+# Files used by the bot
 WATCH_XKCD_CONF_FILE = 'watch_xkcd_conf.json'
 LAST_SEEN_FILE = 'last_seen.json'
+BOTS_FILE = 'test_bot_credentials.json'
+
+# Test bot to launch
+TEST_BOT_NAME = 'Dusty 9 Bot Test 2'
 
 bot = commands.Bot(command_prefix = '!', case_insensitive = True)
 server = None
@@ -23,6 +27,9 @@ pwd = os.path.dirname(os.path.realpath(__file__))
 
 xkcd_conf = json.loads(open(WATCH_XKCD_CONF_FILE).read())
 watch_list = xkcd_conf['channels']
+
+bot_tokens = json.loads(open(BOTS_FILE).read())
+token = bot_tokens[TEST_BOT_NAME]
 
 bot.remove_command("help")
 
