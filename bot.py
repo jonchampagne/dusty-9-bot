@@ -1,6 +1,7 @@
 #!/bin/env python3
 
 import os
+import os.path
 import discord
 from discord.ext import commands
 import asyncio
@@ -19,11 +20,19 @@ LAST_SEEN_FILE = 'last_seen.json'
 BOTS_FILE = 'test_bot_credentials.json'
 
 # Test bot to launch
-TEST_BOT_NAME = 'Dusty 9 Bot Test 2'
+TEST_BOT_NAME = 'Dusty 9 Bot Test'
 
 bot = commands.Bot(command_prefix = '!', case_insensitive = True)
 server = None
 pwd = os.path.dirname(os.path.realpath(__file__))
+
+# Check if WATCH_XKCD_CONF_FILE exists. If not, create it.
+try:
+    xkcd_file = open(WATCH_XKCD_CONF_FILE, 'r')
+except FileNotFoundError:
+    xkcd_file_create = open(WATCH_XKCD_CONF_FILE, 'w')
+    xkcd_file_create.write("{\"channels\": [], \"latest_seen_comic\": null}")
+    xkcd_file_create.close()
 
 xkcd_conf = json.loads(open(WATCH_XKCD_CONF_FILE).read())
 watch_list = xkcd_conf['channels']
@@ -156,7 +165,7 @@ async def last_seen(ctx, *args):
     username = ""
     for arg in args:
         username += arg + " "
-    username = username.strip()
+    username = username.strip().lower()
 
     userid = 0
 
@@ -170,7 +179,9 @@ async def last_seen(ctx, *args):
     
     # Get the ID from the user name
     for member in ctx.message.server.members:
-        if member.name == username:
+        # encode/decode used to remove unicode characters, such as emoji
+        member_name = member.name.encode('ascii', 'ignore').decode('ascii').strip()
+        if member_name.lower() == username:
             userid = member.id
     
     # Build our response
@@ -179,8 +190,9 @@ async def last_seen(ctx, *args):
         response = "Unknown user " + username
     else:
         try:
-            seen = last_seen[userid].strftime('%A, %B %-m at %-I:%M%p')
-        except:
+            seen = last_seen[userid].strftime('%A, %B %d at %I:%M%p')
+        except Exception as e:
+            print(e)
             seen = None
 
         if seen != None:
@@ -223,7 +235,17 @@ def save_last_seen():
     f.close()
 
 def load_last_seen():
-    f = open(LAST_SEEN_FILE, 'r')
+    try:
+        f = open(LAST_SEEN_FILE, 'r')
+    except FileNotFoundError:
+
+        # If the file doesn't exist, create it.
+        f2 = open(LAST_SEEN_FILE, 'w')
+        f2.write("{}")
+        f2.close()
+        last_seen = dict()
+        return last_seen
+    
     imported = json.loads(f.read())
     f.close()
     
@@ -243,7 +265,7 @@ async def log_people_seen():
         
         for server in bot.servers:
             for member in server.members:
-                if str(member.status) == "online":
+                if str(member.status) != "offline":
                     last_seen[member.id] = now
         
         save_last_seen()
