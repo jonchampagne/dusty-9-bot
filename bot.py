@@ -260,8 +260,6 @@ def load_last_seen():
 async def log_people_seen():
     await bot.wait_until_ready()
 
-    print(bot.is_closed)
-
     while not bot.is_closed:
         now = datetime.datetime.now()
         
