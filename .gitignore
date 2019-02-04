@@ -115,5 +115,10 @@ Pipfile.lock
 last_seen.json
 watch_xkcd_conf.json
 
+# Generated systemd files
+systemd/*.service
+systemd/*.path
+systemd/*.timer
+
 # Bot pid file
 pid
