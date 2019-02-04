@@ -119,3 +119,6 @@ watch_xkcd_conf.json
 systemd/*.service
 systemd/*.path
 systemd/*.timer
+
+# Bot pid file
+pid
