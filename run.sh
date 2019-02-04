@@ -9,10 +9,24 @@ then
 	return 1
 fi
 
+# Kill any other instance of this bot
+if [ -f pid ]; then
+  kill `cat pid`
+fi
+
 # Install dependancies
 pipenv install
-
 echo
 
 # Run the program
-pipenv run python ./bot.py
+pipenv run python ./bot.py &
+echo $! > pid
+wait $!
+
+# Remove the pid file if it's still our's
+if [ -f pid ]; then
+  if [ `cat pid` == $! ]; then
+    rm pid
+  fi
+fi
+
