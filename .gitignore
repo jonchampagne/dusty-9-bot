@@ -114,3 +114,6 @@ Pipfile.lock
 # Config and log files (generated on first run)
 last_seen.json
 watch_xkcd_conf.json
+
+# Bot pid file
+pid
