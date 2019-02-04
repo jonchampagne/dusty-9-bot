@@ -1,4 +1,4 @@
-#!/bin/env python3
+#!/usr/bin/env python3
 
 import os
 import os.path
@@ -17,10 +17,10 @@ import datetime
 # Files used by the bot
 WATCH_XKCD_CONF_FILE = 'watch_xkcd_conf.json'
 LAST_SEEN_FILE = 'last_seen.json'
-BOTS_FILE = 'test_bot_credentials.json'
+BOTS_FILE = 'bot_credentials.json'
 
 # Test bot to launch
-TEST_BOT_NAME = 'Dusty 9 Bot Test'
+BOT_NAME = 'Dusty 9 Bot Test'
 
 bot = commands.Bot(command_prefix = '!', case_insensitive = True)
 server = None
@@ -38,7 +38,7 @@ xkcd_conf = json.loads(open(WATCH_XKCD_CONF_FILE).read())
 watch_list = xkcd_conf['channels']
 
 bot_tokens = json.loads(open(BOTS_FILE).read())
-token = bot_tokens[TEST_BOT_NAME]
+token = bot_tokens[BOT_NAME]
 
 bot.remove_command("help")
 
@@ -65,7 +65,7 @@ async def help():
     s += "!roll_stats X: Various statistics of a roll specified in standard die notation (XdY)\n"
     s += "!last_seen <username>: When was <username> last online?"
     s += "```"
-    
+
     await bot.say(s)
 
 @bot.command()
@@ -77,7 +77,7 @@ async def flip(count = 1):
         outstr = ""
 
         x = int(count)
-        
+
         if x > 500:
             await bot.say("Are you out of your mind!?! No way I'm flipping a coin " + str(x) + " times!")
             return
@@ -90,18 +90,18 @@ async def flip(count = 1):
                 outstr += "Tails! "
             else:
                 outstr += "It landed on it's side... "
-        
+
         splitlength = 1995
-        
+
         s = wrap(outstr, splitlength)
-        
+
         for i in s:
             await bot.say(i)
 
     except Exception as e:
         await bot.say("Error: " + str(e))
         print(traceback.format_exc())
-        
+
 
 @bot.command()
 async def roll(dice : str):
@@ -170,20 +170,20 @@ async def last_seen(ctx, *args):
     userid = 0
 
     # We got an @username. Handy!
-    # We still resolve to a username and then resolve back to a 
+    # We still resolve to a username and then resolve back to a
     # userid to make sure the user actually exists on this server.
     # Efficient? No. Works? Yup!
     if username.startswith("<@"):
         uid = username.strip("<@").strip(">")
         username = ctx.message.server.members[uid].name
-    
+
     # Get the ID from the user name
     for member in ctx.message.server.members:
         # encode/decode used to remove unicode characters, such as emoji
         member_name = member.name.encode('ascii', 'ignore').decode('ascii').strip()
         if member_name.lower() == username:
             userid = member.id
-    
+
     # Build our response
     response = ""
     if userid == 0:
@@ -213,7 +213,7 @@ async def show_xkcd(num: str, channel):
 
 async def _watch_xkcd():
     await bot.wait_until_ready()
-    
+
     # Python was getting finnicky about modifying a global int. This is the easiest way around that
     while not bot.is_closed:
         if xkcd_conf['latest_seen_comic'] != libxkcd.getLatestComicNum():
@@ -245,15 +245,15 @@ def load_last_seen():
         f2.close()
         last_seen = dict()
         return last_seen
-    
+
     imported = json.loads(f.read())
     f.close()
-    
+
     last_seen = dict()
 
     for i in imported:
         datestring = imported[i]
-        last_seen[i] = datetime.datetime.strptime(datestring, '%Y-%m-%d %H:%M:%S.%f') # http://strftime.org 
+        last_seen[i] = datetime.datetime.strptime(datestring, '%Y-%m-%d %H:%M:%S.%f') # http://strftime.org
 
     return last_seen
 
@@ -262,16 +262,16 @@ async def log_people_seen():
 
     while not bot.is_closed:
         now = datetime.datetime.now()
-        
+
         for server in bot.servers:
             for member in server.members:
                 if str(member.status) != "offline":
                     last_seen[member.id] = now
-        
+
         save_last_seen()
         await asyncio.sleep(60)
 
-               
+
 last_seen = load_last_seen()
 
 bot.loop.create_task(_watch_xkcd())
