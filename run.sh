@@ -12,5 +12,7 @@ fi
 # Install dependancies
 pipenv install
 
+echo
+
 # Run the program
 pipenv run python ./bot.py
