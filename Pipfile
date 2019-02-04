@@ -1,4 +1,14 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
 [packages]
-discord = "*"
-xkcd = "*"
-dice = "*"
+xkcd = "~=2.4"
+dice = "~=2.4"
+discord = "~=0.16"
+
+[requires]
+python_version = "3.6"
