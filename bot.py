@@ -20,7 +20,7 @@ LAST_SEEN_FILE = 'last_seen.json'
 BOTS_FILE = 'bot_credentials.json'
 
 # Test bot to launch
-BOT_NAME = 'Dusty 9 Bot Test'
+BOT_NAME = 'Production'
 
 bot = commands.Bot(command_prefix = '!', case_insensitive = True)
 server = None
@@ -209,7 +209,7 @@ async def show_xkcd(num: str, channel):
     await bot.send_message(channel, comic.getTitle())
     print(str(pwd))
     await bot.send_file(channel, str(pwd) + "/XKCD-" + num + ".png")
-    await bot.send_message(channel, comic.getAltText())
+    await bot.send_message(channel, "||" + comic.getAltText() + "||")
 
 async def _watch_xkcd():
     await bot.wait_until_ready()
