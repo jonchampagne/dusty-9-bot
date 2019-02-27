@@ -175,7 +175,11 @@ async def last_seen(ctx, *args):
     # Efficient? No. Works? Yup!
     if username.startswith("<@"):
         uid = username.strip("<@").strip(">")
-        username = ctx.message.server.members[uid].name
+        for member in list(ctx.message.server.members):
+            if member.id == uid:
+                username = member.name.lower()
+                print(username)
+                break
 
     # Get the ID from the user name
     for member in ctx.message.server.members:
