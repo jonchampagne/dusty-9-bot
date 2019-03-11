@@ -63,7 +63,8 @@ async def help():
     s += "!roll X: Rolls d a die or dice, specified in standard die notation (XdY)\n"
     s += "!xkcd n: Pulls up XKCD #n \n"
     s += "!roll_stats X: Various statistics of a roll specified in standard die notation (XdY)\n"
-    s += "!last_seen <username>: When was <username> last online?"
+    s += "!last_seen <username>: When was <username> last online?\n"
+    s += "!acc: v1,v2,t Calculate acceleration, with V1 (Initial Velocity), V2 (Second Velocity), and time. For velocity, use consistent units\n"
     s += "```"
 
     await bot.say(s)
@@ -205,6 +206,25 @@ async def last_seen(ctx, *args):
             response = "Never seen " + username
 
     await bot.say(response)
+
+@bot.command()
+async def acceleration(v1=None, v2=None, time=None):
+    try:
+
+        outstr = ""
+        if (v1 == None) or (v2 == None) or (time == None):
+            outstr = "You must enter all the values!"
+        elif (time == 0):
+            outstr = "Time cannot be zero!"
+        else:
+            v2_int = int(v2);
+            v1_int = int(v1);
+            time_int = int(time);
+            outstr = (v2_int - v1_int)/time_int
+        await bot.say(outstr);
+    except Exception as e:
+        await bot.say("Error: " + str(e))
+        await bot.say(traceback.format_exc())
 
 async def show_xkcd(num: str, channel):
     comic = libxkcd.getComic(num)
