@@ -63,7 +63,7 @@ async def help():
     s += "!roll X: Rolls d a die or dice, specified in standard die notation (XdY)\n"
     s += "!xkcd n: Pulls up XKCD #n \n"
     s += "!roll_stats X: Various statistics of a roll specified in standard die notation (XdY)\n"
-#    s += "!last_seen <username>: When was <username> last online?\n"
+    s += "!last_seen <username>: When was <username> last online?\n"
     s += "!acc: v1,v2,t Calculate acceleration, with V1 (Initial Velocity), V2 (Second Velocity), and time. For velocity, use consistent units\n"
     s += "```"
 
@@ -168,6 +168,8 @@ async def last_seen(ctx, *args):
         username += arg + " "
     username = username.strip().lower()
 
+    print(username)
+
     userid = 0
 
     # We got an @username. Handy!
@@ -175,7 +177,10 @@ async def last_seen(ctx, *args):
     # userid to make sure the user actually exists on this server.
     # Efficient? No. Works? Yup!
     if username.startswith("<@"):
+        # Sometimes the format is <@123456789> and sometimes it's <@!123456789>. Not sure why.
+        # Perhaps it has to do with a user being an admin?
         uid = username.strip("<@").strip(">")
+        uid = uid.strip("!")
         for member in list(ctx.message.server.members):
             if member.id == uid:
                 username = member.name.lower()
@@ -204,6 +209,7 @@ async def last_seen(ctx, *args):
             response = "Last saw " + username + " on " + seen
         else:
             response = "Never seen " + username
+            response += "\nUser ID: "+ userid
 
     await bot.say(response)
 
