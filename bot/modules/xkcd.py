@@ -11,6 +11,9 @@ watch_list = xkcd_conf['channels']
 
 bot_prefix = ""
 
+pwd = os.path.dirname(os.path.realpath(__file__)) + "/../.."
+
+
 def init(bot):
     XKCD(bot)
     return True
@@ -29,7 +32,7 @@ class XKCD:
 
         @bot.command(pass_context=True)
         async def xkcd(ctx, num: str):
-            await show_xkcd(num, ctx.message.channel)
+            await self.show_xkcd(num, ctx.message.channel)
 
         @bot.command(pass_context=True)
         async def watch_xkcd(ctx):
@@ -44,7 +47,8 @@ class XKCD:
             save_xkcd_conf()
             await bot.say(message)
 
-    async def show_xkcd(num: str, channel):
+    async def show_xkcd(self, num: str, channel):
+        bot = self.bot
         comic = libxkcd.getComic(num)
         comic.download(output = pwd, outputFile = "XKCD-" + num + ".png", silent = False)
         await bot.send_message(channel, "XKCD #" + num)
@@ -62,7 +66,7 @@ class XKCD:
             if xkcd_conf['latest_seen_comic'] != libxkcd.getLatestComicNum():
                 xkcd_conf['latest_seen_comic'] = libxkcd.getLatestComicNum()
                 for channel in watch_list:
-                    await show_xkcd(str(xkcd_conf['latest_seen_comic']), bot.get_channel(channel))
+                    await self.show_xkcd(str(xkcd_conf['latest_seen_comic']), bot.get_channel(channel))
                 save_xkcd_conf()
 
             await asyncio.sleep(60)
