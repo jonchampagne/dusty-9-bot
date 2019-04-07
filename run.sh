@@ -19,7 +19,7 @@ pipenv install
 echo
 
 # Run the program
-pipenv run python ./bot.py &
+pipenv run python ./bot &
 echo $! > pid
 wait $!
 

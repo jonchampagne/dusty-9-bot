@@ -2,6 +2,8 @@
 
 import os
 import os.path
+from os.path import dirname, basename, isfile
+import glob
 import discord
 from discord.ext import commands
 import asyncio
@@ -9,13 +11,12 @@ import random
 from textwrap import wrap
 import traceback
 import datetime
-import xkcd as libxkcd
 import json
 import dice
 import datetime
+import importlib
 
 # Files used by the bot
-WATCH_XKCD_CONF_FILE = 'watch_xkcd_conf.json'
 LAST_SEEN_FILE = 'last_seen.json'
 BOTS_FILE = 'bot_credentials.json'
 
@@ -25,17 +26,6 @@ BOT_NAME = 'Production'
 bot = commands.Bot(command_prefix = '!', case_insensitive = True)
 server = None
 pwd = os.path.dirname(os.path.realpath(__file__))
-
-# Check if WATCH_XKCD_CONF_FILE exists. If not, create it.
-try:
-    xkcd_file = open(WATCH_XKCD_CONF_FILE, 'r')
-except FileNotFoundError:
-    xkcd_file_create = open(WATCH_XKCD_CONF_FILE, 'w')
-    xkcd_file_create.write("{\"channels\": [], \"latest_seen_comic\": null}")
-    xkcd_file_create.close()
-
-xkcd_conf = json.loads(open(WATCH_XKCD_CONF_FILE).read())
-watch_list = xkcd_conf['channels']
 
 bot_tokens = json.loads(open(BOTS_FILE).read())
 token = bot_tokens[BOT_NAME]
@@ -144,23 +134,6 @@ async def roll_stats(dicestr : str):
     await bot.say("Typical roll: " + str(typical))
 
 @bot.command(pass_context=True)
-async def xkcd(ctx, num: str):
-    await show_xkcd(num, ctx.message.channel)
-
-@bot.command(pass_context=True)
-async def watch_xkcd(ctx):
-    id = ctx.message.channel.id
-    if id in watch_list:
-        watch_list.remove(id)
-        message = "Removed channel #" + ctx.message.channel.name + " from XKCD watch list"
-    else:
-        watch_list.append(id)
-        message = "Added channel #" + ctx.message.channel.name + " to XKCD watch list"
-
-    save_xkcd_conf()
-    await bot.say(message)
-
-@bot.command(pass_context=True)
 async def last_seen(ctx, *args):
     # Spaces deliminate args. Gather them all up into a username.
     username = ""
@@ -232,33 +205,6 @@ async def acceleration(v1=None, v2=None, time=None):
         await bot.say("Error: " + str(e))
         await bot.say(traceback.format_exc())
 
-async def show_xkcd(num: str, channel):
-    comic = libxkcd.getComic(num)
-    comic.download(output = pwd, outputFile = "XKCD-" + num + ".png", silent = False)
-    await bot.send_message(channel, "XKCD #" + num)
-    await bot.send_message(channel, comic.getTitle())
-    print(str(pwd))
-    await bot.send_file(channel, str(pwd) + "/XKCD-" + num + ".png")
-    await bot.send_message(channel, "||" + comic.getAltText() + "||")
-
-async def _watch_xkcd():
-    await bot.wait_until_ready()
-
-    # Python was getting finnicky about modifying a global int. This is the easiest way around that
-    while not bot.is_closed:
-        if xkcd_conf['latest_seen_comic'] != libxkcd.getLatestComicNum():
-            xkcd_conf['latest_seen_comic'] = libxkcd.getLatestComicNum()
-            for channel in watch_list:
-                await show_xkcd(str(xkcd_conf['latest_seen_comic']), bot.get_channel(channel))
-            save_xkcd_conf()
-
-        await asyncio.sleep(60)
-
-def save_xkcd_conf():
-    f = open(WATCH_XKCD_CONF_FILE, 'w')
-    f.write(json.dumps(xkcd_conf))
-    f.close()
-
 def save_last_seen():
     f = open(LAST_SEEN_FILE, 'w')
     f.write(json.dumps(last_seen, default=str))
@@ -302,8 +248,24 @@ async def log_people_seen():
         await asyncio.sleep(60)
 
 
+
+
 last_seen = load_last_seen()
 
-bot.loop.create_task(_watch_xkcd())
 bot.loop.create_task(log_people_seen())
+
+# Import all dynamic modules
+# From https://stackoverflow.com/a/1057534
+module_files = glob.glob(dirname(__file__) + "/modules/*.py")
+modules = [ basename(f)[:-3] for f in module_files if isfile(f) and not f.endswith('__init__.py')]
+
+for modname in modules:
+    mod = importlib.import_module("modules." + modname)
+    init = getattr(mod, 'init')
+    if init(bot):
+        print("Imported module: " + modname)
+    else:
+        print("Error loading module: " + modname)
+print()
+
 bot.run(token)
