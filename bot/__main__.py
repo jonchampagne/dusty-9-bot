@@ -30,6 +30,8 @@ token = bot_tokens[BOT_NAME]
 
 bot.remove_command("help")
 
+mods = []
+
 @bot.event
 async def on_ready():
     print('Logged in as')
@@ -42,39 +44,20 @@ async def on_ready():
             print('Found server: ' + server.name)
             break
 
-@bot.command()
-async def help():
+# Works similar to the loading of all the modules.
+# Loop through each mod and execute each one's help()
+# which should give back a string.
+@bot.command(pass_context=True)
+async def help(ctx):
+
     s = "```\n"
-    s += "Commands:\n"
-    s += "!flip: Flip a coin\n"
-    s += "!flip n: Flip n coins\n"
-    s += "!roll X: Rolls d a die or dice, specified in standard die notation (XdY)\n"
-    s += "!xkcd n: Pulls up XKCD #n \n"
-    s += "!roll_stats X: Various statistics of a roll specified in standard die notation (XdY)\n"
-    s += "!last_seen <username>: When was <username> last online?\n"
-    s += "!acc: v1,v2,t Calculate acceleration, with V1 (Initial Velocity), V2 (Second Velocity), and time. For velocity, use consistent units\n"
+    for mod in mods:
+        help_text = getattr(mod, 'help')
+        s += help_text(ctx)
+        s += "\n"
     s += "```"
 
     await bot.say(s)
-
-@bot.command()
-async def acceleration(v1=None, v2=None, time=None):
-    try:
-
-        outstr = ""
-        if (v1 == None) or (v2 == None) or (time == None):
-            outstr = "You must enter all the values!"
-        elif (time == 0):
-            outstr = "Time cannot be zero!"
-        else:
-            v2_int = int(v2);
-            v1_int = int(v1);
-            time_int = int(time);
-            outstr = (v2_int - v1_int)/time_int
-        await bot.say(outstr);
-    except Exception as e:
-        await bot.say("Error: " + str(e))
-        await bot.say(traceback.format_exception)
 
 # Import all dynamic modules
 # From https://stackoverflow.com/a/1057534
@@ -86,6 +69,7 @@ for modname in modules:
     init = getattr(mod, 'init')
     if init(bot):
         print("Imported module: " + modname)
+        mods.append(mod)
     else:
         print("Error loading module: " + modname)
 print()

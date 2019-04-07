@@ -4,9 +4,22 @@ import asyncio
 
 LAST_SEEN_FILE = 'last_seen.json'
 
+bot_prefix = ""
+
 def init(bot):
     LastSeen(bot)
+    bot_prefix = bot.command_prefix
+    print(bot_prefix)
+
     return True
+
+def help(ctx):
+    s = "LAST SEEN: \n"
+    s += ctx.bot.command_prefix + "last_seen <username>: When was <username> last online?\n"
+
+    print(bot_prefix)
+
+    return s
 
 class LastSeen:
     bot = None

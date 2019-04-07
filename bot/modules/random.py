@@ -6,6 +6,17 @@ def init(bot):
     Random(bot)
     return True
 
+def help(ctx):
+    pref = ctx.bot.command_prefix
+
+    s = "RANDOM: \n"
+    s += pref + "flip: Flip a coin\n"
+    s += pref + "flip n: Flip n coins\n"
+    s += pref + "roll X: Rolls d a die or dice, specified in standard die notation (XdY)\n"
+    s += pref + "roll_stats X: Various statistics of a roll specified in standard die notation (XdY)\n"
+
+    return s
+
 class Random:
     bot = None
 

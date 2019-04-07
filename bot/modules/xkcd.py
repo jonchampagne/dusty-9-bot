@@ -11,9 +11,17 @@ WATCH_XKCD_CONF_FILE = 'watch_xkcd_conf.json'
 xkcd_conf = json.loads(open(WATCH_XKCD_CONF_FILE).read())
 watch_list = xkcd_conf['channels']
 
+bot_prefix = ""
+
 def init(bot):
     XKCD(bot)
     return True
+
+def help(ctx):
+    s = "XKCD: \n"
+    s += ctx.bot.command_prefix + "xkcd n: Pulls up XKCD #n \n"
+
+    return s
 
 class XKCD:
     bot = None
@@ -37,9 +45,6 @@ class XKCD:
 
             save_xkcd_conf()
             await bot.say(message)
-
-    def help():
-        return '!xkcd n: Pulls XKCD #n \n'
 
     async def show_xkcd(num: str, channel):
         comic = libxkcd.getComic(num)
