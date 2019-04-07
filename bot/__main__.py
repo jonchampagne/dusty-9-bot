@@ -13,11 +13,9 @@ import traceback
 import datetime
 import json
 import dice
-import datetime
 import importlib
 
 # Files used by the bot
-LAST_SEEN_FILE = 'last_seen.json'
 BOTS_FILE = 'bot_credentials.json'
 
 # Test bot to launch
@@ -133,59 +131,6 @@ async def roll_stats(dicestr : str):
     await bot.say("Maximum: " + str(maximum))
     await bot.say("Typical roll: " + str(typical))
 
-@bot.command(pass_context=True)
-async def last_seen(ctx, *args):
-    # Spaces deliminate args. Gather them all up into a username.
-    username = ""
-    for arg in args:
-        username += arg + " "
-    username = username.strip().lower()
-
-    print(username)
-
-    userid = 0
-
-    # We got an @username. Handy!
-    # We still resolve to a username and then resolve back to a
-    # userid to make sure the user actually exists on this server.
-    # Efficient? No. Works? Yup!
-    if username.startswith("<@"):
-        # Sometimes the format is <@123456789> and sometimes it's <@!123456789>. Not sure why.
-        # Perhaps it has to do with a user being an admin?
-        uid = username.strip("<@").strip(">")
-        uid = uid.strip("!")
-        for member in list(ctx.message.server.members):
-            if member.id == uid:
-                username = member.name.lower()
-                print(username)
-                break
-
-    # Get the ID from the user name
-    for member in ctx.message.server.members:
-        # encode/decode used to remove unicode characters, such as emoji
-        member_name = member.name.encode('ascii', 'ignore').decode('ascii').strip()
-        if member_name.lower() == username:
-            userid = member.id
-
-    # Build our response
-    response = ""
-    if userid == 0:
-        response = "Unknown user " + username
-    else:
-        try:
-            seen = last_seen[userid].strftime('%A, %B %d at %I:%M%p')
-        except Exception as e:
-            print(e)
-            seen = None
-
-        if seen != None:
-            response = "Last saw " + username + " on " + seen
-        else:
-            response = "Never seen " + username
-            response += "\nUser ID: "+ userid
-
-    await bot.say(response)
-
 @bot.command()
 async def acceleration(v1=None, v2=None, time=None):
     try:
@@ -203,56 +148,7 @@ async def acceleration(v1=None, v2=None, time=None):
         await bot.say(outstr);
     except Exception as e:
         await bot.say("Error: " + str(e))
-        await bot.say(traceback.format_exc())
-
-def save_last_seen():
-    f = open(LAST_SEEN_FILE, 'w')
-    f.write(json.dumps(last_seen, default=str))
-    f.close()
-
-def load_last_seen():
-    try:
-        f = open(LAST_SEEN_FILE, 'r')
-    except FileNotFoundError:
-
-        # If the file doesn't exist, create it.
-        f2 = open(LAST_SEEN_FILE, 'w')
-        f2.write("{}")
-        f2.close()
-        last_seen = dict()
-        return last_seen
-
-    imported = json.loads(f.read())
-    f.close()
-
-    last_seen = dict()
-
-    for i in imported:
-        datestring = imported[i]
-        last_seen[i] = datetime.datetime.strptime(datestring, '%Y-%m-%d %H:%M:%S.%f') # http://strftime.org
-
-    return last_seen
-
-async def log_people_seen():
-    await bot.wait_until_ready()
-
-    while not bot.is_closed:
-        now = datetime.datetime.now()
-
-        for server in bot.servers:
-            for member in server.members:
-                if str(member.status) != "offline":
-                    last_seen[member.id] = now
-
-        save_last_seen()
-        await asyncio.sleep(60)
-
-
-
-
-last_seen = load_last_seen()
-
-bot.loop.create_task(log_people_seen())
+        await bot.say(traceback.format_exception)
 
 # Import all dynamic modules
 # From https://stackoverflow.com/a/1057534
