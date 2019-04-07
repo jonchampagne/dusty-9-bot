@@ -66,12 +66,24 @@ modules = [ basename(f)[:-3] for f in module_files if isfile(f) and not f.endswi
 
 for modname in modules:
     mod = importlib.import_module("modules." + modname)
-    init = getattr(mod, 'init')
-    if init(bot):
-        print("Imported module: " + modname)
-        mods.append(mod)
-    else:
+    try:
+        init = getattr(mod, 'init')
+    except AttributeError:
         print("Error loading module: " + modname)
+        print("Error: init not found")
+    else:
+        try:
+            help = getattr(mod, 'help')
+        except AttributeError:
+            print("Error loading module: " + modname)
+            print("Error: help not found")
+        else:
+            if init(bot):
+                print("Imported module: " + modname)
+                mods.append(mod)
+            else:
+                print("Error loading module: " + modname)
+                print("Error: Failed to initialize")
 print()
 
 bot.run(token)
