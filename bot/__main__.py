@@ -6,13 +6,7 @@ from os.path import dirname, basename, isfile
 import glob
 import discord
 from discord.ext import commands
-#import asyncio
-#import random
-#from textwrap import wrap
-#import traceback
-#import datetime
 import json
-#import dice
 import importlib
 
 # Files used by the bot
