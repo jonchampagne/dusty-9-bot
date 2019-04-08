@@ -64,7 +64,7 @@ async def help():
     s += "!xkcd n: Pulls up XKCD #n \n"
     s += "!roll_stats X: Various statistics of a roll specified in standard die notation (XdY)\n"
     s += "!last_seen <username>: When was <username> last online?\n"
-    s += "!acc: v1,v2,t Calculate acceleration, with V1 (Initial Velocity), V2 (Second Velocity), and time. For velocity, use consistent units\n"
+    s += "!acceleration: v1,v2,t Calculate acceleration, with V1 (Initial Velocity), V2 (Second Velocity), and time. For velocity, use consistent units\n"
     s += "```"
 
     await bot.say(s)
