@@ -1,6 +1,3 @@
-
-bot_prefix = ""
-
 def init(bot):
     Math(bot)
     return True
