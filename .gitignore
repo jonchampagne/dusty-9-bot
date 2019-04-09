@@ -125,3 +125,6 @@ bot_credentials.json
 
 # Bot pid file
 pid
+
+# Year progress
+year_percentage.txt
