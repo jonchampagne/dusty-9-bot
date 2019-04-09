@@ -8,6 +8,7 @@ import discord
 from discord.ext import commands
 import json
 import importlib
+import traceback
 
 # Files used by the bot
 BOTS_FILE = 'bot_credentials.json'
@@ -72,12 +73,16 @@ for modname in modules:
             print("Error loading module: " + modname)
             print("Error: help not found")
         else:
-            if init(bot):
-                print("Imported module: " + modname)
-                mods.append(mod)
-            else:
+            try:
+                if init(bot):
+                    print("Imported module: " + modname)
+                    mods.append(mod)
+                else:
+                    print("Error loading module: " + modname)
+                    print("Error: Failed to initialize")
+            except Exception as e:
                 print("Error loading module: " + modname)
-                print("Error: Failed to initialize")
+                print(traceback.format_exc())
 print()
 
 bot.run(token)
