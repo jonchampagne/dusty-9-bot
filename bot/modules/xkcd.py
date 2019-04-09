@@ -103,7 +103,7 @@ class XKCD:
         self.watch_list = self.xkcd_conf['channels']
 
         # Make sure the latest what if is also in the xkcd file
-        if 'latest_seen_whatif' not in xkcd_conf:
+        if 'latest_seen_whatif' not in self.xkcd_conf:
             self.xkcd_conf['latest_seen_whatif'] = 0
 
         # Register the watch_xkcd functionality
