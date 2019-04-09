@@ -9,6 +9,7 @@ verify_ssl = true
 xkcd = "~=2.4"
 dice = "~=2.4"
 discord = "~=0.16"
+feedparser = "~=5.2"
 
 [requires]
 python_version = "3.6"
