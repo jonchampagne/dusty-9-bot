@@ -31,6 +31,9 @@ async def year_progress(bot):
         seconds = (now - year_start).total_seconds()
         perc = floor((seconds / SECONDS_IN_YEAR) * 100)
 
+        if perc < 99 and latest_perc >= 99:
+            latest_perc = 0;
+
         if perc > latest_perc:
             # Print out to all channels the year percentage
             bar = _generate_bar(perc)
