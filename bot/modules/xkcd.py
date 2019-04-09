@@ -45,7 +45,7 @@ class XKCD:
                 watch_list.append(id)
                 message = "Added channel #" + ctx.message.channel.name + " to XKCD watch list"
 
-            save_xkcd_conf()
+            self.save_xkcd_conf()
             await bot.say(message)
 
     async def show_xkcd(self, num: str, channel):
@@ -71,6 +71,13 @@ class XKCD:
                 for channel in watch_list:
                     await self.show_xkcd(str(xkcd_conf['latest_seen_comic']), bot.get_channel(channel))
                 self.save_xkcd_conf()
+            if xkcd_conf['latest_seen_whatif'] != libxkcd.getLatestWhatIfNum():
+                xkcd_conf['latest_seen_whatif'] = libxkcd.getLatestWhatIfNum()
+                whatif = libxkcd.getLatestWhatIf()
+                for channel in watch_list:
+                    message = "New what if!\n" + whatif.getTitle() + "\n" + whatif.getLink()
+                    await bot.send_message(bot.get_channel(channel), message)
+                self.save_xkcd_conf()
 
             await asyncio.sleep(60)
 
@@ -89,12 +96,15 @@ class XKCD:
             xkcd_file = open(WATCH_XKCD_CONF_FILE, 'r')
         except FileNotFoundError:
             xkcd_file_create = open(WATCH_XKCD_CONF_FILE, 'w')
-            xkcd_file_create.write("{\"channels\": [], \"latest_seen_comic\": null}")
+            xkcd_file_create.write("{\"channels\": [], \"latest_seen_comic\": null, \"whatif_channels\": [], \"latest_seen_whatif\": null}")
             xkcd_file_create.close()
 
         self.xkcd_conf = json.loads(open(WATCH_XKCD_CONF_FILE).read())
         self.watch_list = self.xkcd_conf['channels']
 
+        # Make sure the latest what if is also in the xkcd file
+        if 'latest_seen_whatif' not in xkcd_conf:
+            self.xkcd_conf['latest_seen_whatif'] = 0
 
         # Register the watch_xkcd functionality
         bot.loop.create_task(self._watch_xkcd())
