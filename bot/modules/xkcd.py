@@ -6,9 +6,6 @@ import asyncio
 
 WATCH_XKCD_CONF_FILE = 'watch_xkcd_conf.json'
 
-xkcd_conf = json.loads(open(WATCH_XKCD_CONF_FILE).read())
-watch_list = xkcd_conf['channels']
-
 bot_prefix = ""
 
 pwd = os.path.dirname(os.path.realpath(__file__)) + "/../.."
@@ -26,6 +23,10 @@ def help(ctx):
 
 class XKCD:
     bot = None
+
+    xkcd_conf = None
+    watch_list = None
+
 
     def _register_commands(self):
         bot = self.bot
@@ -58,6 +59,8 @@ class XKCD:
 
     async def _watch_xkcd(self):
         bot = self.bot
+        xkcd_conf = self.xkcd_conf
+        watch_list = self.watch_list
 
         await bot.wait_until_ready()
 
@@ -67,13 +70,13 @@ class XKCD:
                 xkcd_conf['latest_seen_comic'] = libxkcd.getLatestComicNum()
                 for channel in watch_list:
                     await self.show_xkcd(str(xkcd_conf['latest_seen_comic']), bot.get_channel(channel))
-                save_xkcd_conf()
+                self.save_xkcd_conf()
 
             await asyncio.sleep(60)
 
-    def save_xkcd_conf():
+    def save_xkcd_conf(self):
         f = open(WATCH_XKCD_CONF_FILE, 'w')
-        f.write(json.dumps(xkcd_conf))
+        f.write(json.dumps(self.xkcd_conf))
         f.close()
 
 
@@ -88,6 +91,10 @@ class XKCD:
             xkcd_file_create = open(WATCH_XKCD_CONF_FILE, 'w')
             xkcd_file_create.write("{\"channels\": [], \"latest_seen_comic\": null}")
             xkcd_file_create.close()
+
+        self.xkcd_conf = json.loads(open(WATCH_XKCD_CONF_FILE).read())
+        self.watch_list = self.xkcd_conf['channels']
+
 
         # Register the watch_xkcd functionality
         bot.loop.create_task(self._watch_xkcd())
