@@ -3,6 +3,7 @@ import json
 import validators
 import traceback
 import datetime
+import urllib
 
 RSS_CONFIG_FILE = "rss_config.json"
 
@@ -37,6 +38,11 @@ class FeedReader:
             except Exception as e:
                 print(traceback.format_exc())
                 await self.bot.say(str(e))
+                return
+
+            # Typically happens when the URL is bad
+            if d.bozo and type(d.bozo_exception) is urllib.error.URLError:
+                await self.bot.say("Bad feed")
                 return
 
             # I heard you like feeds, so I make sure there's a feed in all our feeds
