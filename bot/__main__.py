@@ -50,6 +50,8 @@ async def help(ctx):
         help_text = getattr(mod, 'help')
         s += help_text(ctx)
         s += "\n"
+
+    s += "Source code available at https://github.com/jonchampagne/dusty-9-bot"
     s += "```"
 
     await bot.say(s)
