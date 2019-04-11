@@ -4,6 +4,10 @@ import validators
 import traceback
 import datetime
 import urllib
+import asyncio
+import time
+from textwrap import wrap
+import re
 
 RSS_CONFIG_FILE = "rss_config.json"
 
@@ -158,10 +162,106 @@ class FeedReader:
             if not something_found:
                 message += "No feeds registered"
 
-            await self.bot.say(message)
+            await self.say_something(message, ctx.message.channel)
 
     def _watch_feed(self, url):
-        print("WARNING: watch_feed not implemented. " + url)
+        self.bot.loop.create_task(self._watch_feed_task(url))
+
+    async def _watch_feed_task(self, url):
+        await self.bot.wait_until_ready()
+
+        while not self.bot.is_closed:
+            print("Checking feed " + url)
+
+            try:
+                feed = self.config['feeds'][url]
+            except KeyError:
+                print("Feed has been removed " + url)
+                return
+
+            try:
+                d = feedparser.parse(url)
+            except Exception as e:
+                print(traceback.format_exc())
+                return
+
+            something_new = False
+
+            # Check the updated date on the whole feed
+            #if 'updated_parsed' in d:
+            #    updated = datetime.datetime.fromtimestamp(time.mktime(d.updated_parsed))
+            #    if updated > feed['latest_seen']:
+            #        print("Whole feed updated date later than most recently seen")
+            #        print("Updated: " + str(updated))
+            #        print("Latest Seen: " + str(feed['latest_seen']))
+            #        something_new = True
+            # Failing that, check the published date on all the items.
+            if 'entries' in d:
+                for entry in d.entries:
+                    if 'published_parsed' in entry or 'updated_parsed' in entry:
+                        if 'published_parsed' in entry: date_parsed = entry.published_parsed
+                        elif 'updated_parsed' in entry: date_parsed = entry.updated_parsed
+                        updated = datetime.datetime.fromtimestamp(time.mktime(date_parsed))
+                        if updated > feed['latest_seen']:
+                            something_new = True
+                            break
+            # For troubleshooting when we don't find a publication date
+            else:
+                print("ERROR: Couldn't figure out publication date of feed")
+                print(json.dumps(d, indent=1))
+
+            if something_new:
+                print("Something new!")
+                if 'entries' in d:
+                    latest_new_entry = datetime.datetime.min
+                    for entry in d.entries:
+                        if 'published_parsed' in entry or 'updated_parsed' in entry:
+                            if 'published_parsed' in entry: date_parsed = entry.published_parsed
+                            elif 'updated_parsed' in entry: date_parsed = entry.updated_parsed
+                            updated = datetime.datetime.fromtimestamp(time.mktime(date_parsed))
+                            if updated > latest_new_entry:
+                                latest_new_entry = updated
+                            if updated > feed['latest_seen']:
+                                for channel in self.config['feeds'][url]['channels']:
+                                    message = ""
+                                    if 'title' in d:
+                                        message += "**__" + d.title + "__**\n"
+                                    elif 'title' in feed:
+                                        message += "**__" + feed['title'] + "__**\n"
+                                    if 'title' in entry:
+                                        message += "**" + entry.title + "**\n"
+                                    if 'description' in entry:
+                                        cleanr = re.compile('<.*?>')
+                                        message += re.sub(cleanr, '', entry.description) + "\n"
+                                    if 'link' in entry:
+                                        message += entry['link']
+
+                                    await self.say_something(message, self.bot.get_channel(channel))
+                        else:
+                            print("published not found for entry " + entry.title)
+                            print(json.dumps(entry, indent=1, default=str))
+                if latest_new_entry != datetime.datetime.min:
+                    self.config['feeds'][url]['latest_seen'] = latest_new_entry
+                self.save_config()
+            else:
+                print("Nothing new...")
+
+            await asyncio.sleep(61)
+
+    async def say_something(self, message, channel):
+#        print(message)
+        # Character limit is 2000. So might as well be a little extra safe.
+        if len(message) > 1990:
+            for s in self.split(message, 1990):
+                await self.say_something(s, channel)
+                return
+        try:
+            await self.bot.send_message(channel, message)
+        except:
+            print("WARNING: Error saying something: " + message[:50])
+
+    def split(self, str, num):
+            return [ str[start:start+num] for start in range(0, len(str), num) ]
 
     def save_config(self):
         try:
@@ -195,5 +295,11 @@ class FeedReader:
         self._register_commands()
 
         for url, feed in self.config['feeds'].items():
+            try:
+                feed['latest_seen'] = datetime.datetime.strptime(feed['latest_seen'], '%Y-%m-%d %H:%M:%S.%f') # http://strftime.org
+            except ValueError:
+                # Sometimes (usually) the timestamps don't have milliseconds
+                feed['latest_seen'] = datetime.datetime.strptime(feed['latest_seen'], '%Y-%m-%d %H:%M:%S')
+
             self._watch_feed(url)
 
