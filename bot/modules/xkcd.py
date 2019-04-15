@@ -38,6 +38,7 @@ class XKCD:
         @bot.command(pass_context=True)
         async def watch_xkcd(ctx):
             id = ctx.message.channel.id
+            watch_list = self.watch_list
             if id in watch_list:
                 watch_list.remove(id)
                 message = "Removed channel #" + ctx.message.channel.name + " from XKCD watch list"
