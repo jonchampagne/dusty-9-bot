@@ -19,7 +19,7 @@ def help(ctx):
     prefix = ctx.bot.command_prefix
     s = "RSS\n"
     s += prefix + "add_rss_feed url: Add an RSS feed to be posted by the bot\n"
-    s += prefix + "remove_rss_feed url: Remove an RSS feed previously added to this channel\n"
+    s += prefix + "remove_rss_feed [title | url]: Remove an RSS feed previously added to this channel\n"
     s += prefix + "show_rss_feeds: List out the RSS feeds currently added to this channel\n"
     return s
 
