@@ -8,7 +8,8 @@ SECONDS_IN_YEAR = 31622400
 YEAR_PERCENTAGE_FILE = 'year_percentage.txt'
 
 def init(bot):
-    bot.loop.create_task(year_progress(bot))
+    # Disabled by default
+    #bot.loop.create_task(year_progress(bot))
     return True
 
 def help(ctx):
