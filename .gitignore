@@ -109,7 +109,7 @@ venv.bak/
 # XKCD Comic Image Files
 XKCD-*.png
 # Pipenv local files
-Pipfile.lock
+#Pipfile.lock
 
 # Config and log files (generated on first run)
 last_seen.json
