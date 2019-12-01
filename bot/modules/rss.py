@@ -8,8 +8,9 @@ import asyncio
 import time
 from textwrap import wrap
 import re
+import config
 
-RSS_CONFIG_FILE = "rss_config.json"
+RSS_CONFIG_FILE = config.CONFIG_DIR + "/rss_config.json"
 
 def init(bot):
     FeedReader(bot)

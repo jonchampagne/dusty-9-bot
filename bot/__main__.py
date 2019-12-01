@@ -9,9 +9,10 @@ from discord.ext import commands
 import json
 import importlib
 import traceback
+import config
 
 # Files used by the bot
-BOTS_FILE = 'bot_credentials.json'
+BOTS_FILE = config.CONFIG_DIR + 'bot_credentials.json'
 
 # Test bot to launch
 BOT_NAME = 'Production'

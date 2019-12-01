@@ -3,8 +3,9 @@ import os.path
 import json
 import xkcd as libxkcd
 import asyncio
+import config
 
-WATCH_XKCD_CONF_FILE = 'watch_xkcd_conf.json'
+WATCH_XKCD_CONF_FILE = config.CONFIG_DIR + '/watch_xkcd_conf.json'
 
 bot_prefix = ""
 

@@ -1,8 +1,9 @@
 import json
 import datetime
 import asyncio
+import config
 
-LAST_SEEN_FILE = 'last_seen.json'
+LAST_SEEN_FILE = config.CONFIG_DIR + '/last_seen.json'
 
 bot_prefix = ""
 

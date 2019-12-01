@@ -2,10 +2,11 @@ import asyncio
 import datetime
 from math import floor
 from discord import ChannelType
+import config
 
 SECONDS_IN_YEAR = 31622400
 
-YEAR_PERCENTAGE_FILE = 'year_percentage.txt'
+YEAR_PERCENTAGE_FILE = config.CONFIG_DIR + '/year_percentage.txt'
 
 def init(bot):
     # Disabled by default
