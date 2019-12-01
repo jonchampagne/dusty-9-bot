@@ -2,7 +2,7 @@
 
 echo Key $API_KEY
 
-echo "{\"Production\":\"$API_KEY\"}" | tee -a bot_credentials.json
+echo "{\"Production\":\"$API_KEY\"}" > config/bot_credentials.json
 
 #if [[ -v $API_KEY ]]
 #then
