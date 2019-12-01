@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo Key $API_KEY
+mkdir -p config
 
 echo "{\"Production\":\"$API_KEY\"}" > config/bot_credentials.json
 
