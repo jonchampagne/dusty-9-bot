@@ -1,0 +1,4 @@
+discord.py~=1.7
+dice~=3.1
+# Format of this line figured out from https://stackoverflow.com/questions/16584552/how-to-state-in-requirements-txt-a-direct-github-source
+git+https://github.com/TC01/python-xkcd.git@37b6deb50bd17dee94ff1623b182007cd0c17327#xkcd
