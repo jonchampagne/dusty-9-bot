@@ -1,1 +1,4 @@
 token.txt
+token.txt
+config/*
+*.pyc
