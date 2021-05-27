@@ -118,21 +118,13 @@ class LastSeen:
       await asyncio.sleep(1)
       
       now = datetime.datetime.now()
-      print('Looping through servers')
-      print(bot.guilds)
       for server in bot.guilds:
-        print('server:')
-        print(server)
         for member in server.members:
-          print('member:')
-          print(member)
-          print(member.status)
           if str(member.status) != "offline":
             self.last_seen[member.id] = now
         await asyncio.sleep(5)
 
       self.save_last_seen()
-      print('logged people seen')
 
   def __init__(self, robot):
     self.bot = robot
