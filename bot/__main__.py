@@ -14,6 +14,28 @@ f = open('token.txt')
 token = f.readline()
 f.close()
 
+# Set up the basics of the bot
+bot = commands.Bot(command_prefix='!')
+bot.remove_command('help')
+
+@bot.event
+async def on_ready():
+  print('We have logged in as {0.user}'.format(bot))
+  for mod in mods:
+    ready = getattr(mod, 'on_ready')
+    ready()
+
+@bot.command(pass_context = True)
+async def help(ctx):
+  s = "```\n"
+  for mod in mods:
+    help_text = getattr(mod, 'help')
+    s += help_text(ctx)
+    s += "\n"
+  s += 'Source code available at https://github.com/jonchampagne/dusty-9-bot'
+  s += '```'
+  await ctx.send(s)
+
 # Dynamically load modules
 # From https://stackoverflow.com/a/1057534
 mods = []
@@ -43,28 +65,6 @@ for modname in modules:
       except Exception as e:
         print("Error loading module: " + modname)
         print(traceback.format_exc())
-
-# Set up the basics of the bot
-bot = commands.Bot(command_prefix='!')
-bot.remove_command('help')
-
-@bot.event
-async def on_ready():
-  print('We have logged in as {0.user}'.format(bot))
-  for mod in mods:
-    ready = getattr(mod, 'on_ready')
-    ready()
-
-@bot.command(pass_context = True)
-async def help(ctx):
-  s = "```\n"
-  for mod in mods:
-    help_text = getattr(mod, 'help')
-    s += help_text(ctx)
-    s += "\n"
-  s += 'Source code available at https://github.com/jonchampagne/dusty-9-bot'
-  s += '```'
-  await ctx.send(s)
 
 # Start the actual main bot process
 bot.run(token)
